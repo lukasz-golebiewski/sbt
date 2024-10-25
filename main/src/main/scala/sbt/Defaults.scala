@@ -647,7 +647,8 @@ object Defaults extends BuildCommon {
       val dir = classDirectory.value
       converter.toVirtualFile(dir.toPath)
     },
-    earlyOutput / artifactPath := configArtifactPathSetting(artifact, "early").value,
+    earlyOutput / artifactPath := crossTarget.value /
+      (prefix(configuration.value.name) + "early") / "early.jar",
     earlyOutput := {
       val converter = fileConverter.value
       val jar = (earlyOutput / artifactPath).value
@@ -1812,23 +1813,6 @@ object Defaults extends BuildCommon {
       filter: ScopedTaskable[FileFilter],
       excludes: ScopedTaskable[FileFilter]
   ): Initialize[Task[Seq[File]]] = collectFiles(dirs: Taskable[Seq[File]], filter, excludes)
-
-  private[sbt] def configArtifactPathSetting(
-      art: SettingKey[Artifact],
-      extraPrefix: String
-  ): Initialize[File] =
-    Def.setting {
-      val f = artifactName.value
-      crossTarget.value /
-        (prefix(configuration.value.name) + extraPrefix) / f(
-        ScalaVersion(
-          (artifactName / scalaVersion).value,
-          (artifactName / scalaBinaryVersion).value
-        ),
-        projectID.value,
-        art.value
-      )
-    }
 
   private[sbt] def prefixArtifactPathSetting(
       art: SettingKey[Artifact],
