@@ -84,7 +84,9 @@ private[sbt] object TemplateCommandUtil {
       hit
     } match {
       case Some(_) => // do nothing
-      case None    => System.err.println("Template not found for: " + arguments.mkString(" "))
+      case None =>
+        val error = "Template not found for: " + arguments.mkString(" ")
+        throw new IllegalArgumentException(error)
     }
 
   private def tryTemplate(
@@ -276,7 +278,8 @@ private[sbt] object TemplateCommandUtil {
       case TypelevelToolkitSlug :: Nil => typelevelToolkitTemplate()
       case SbtCrossPlatformSlug :: Nil => sbtCrossPlatformTemplate()
       case _ =>
-        System.err.println("Local template not found for: " + arguments.mkString(" "))
+        val error = "Local template not found for: " + arguments.mkString(" ")
+        throw new IllegalArgumentException(error)
     }
 
   private final val defaultScalaV = "3.3.4"
