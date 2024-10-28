@@ -1818,16 +1818,8 @@ object Defaults extends BuildCommon {
       extraPrefix: String
   ): Initialize[File] =
     Def.setting {
-      val f = artifactName.value
       crossTarget.value /
-        (prefix(configuration.value.name) + extraPrefix) / f(
-        ScalaVersion(
-          (artifactName / scalaVersion).value,
-          (artifactName / scalaBinaryVersion).value
-        ),
-        projectID.value,
-        art.value
-      )
+        (prefix(configuration.value.name) + "early") / "early.jar"
     }
 
   private[sbt] def prefixArtifactPathSetting(
