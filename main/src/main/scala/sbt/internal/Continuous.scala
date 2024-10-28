@@ -1129,7 +1129,7 @@ private[sbt] object Continuous extends DeprecatedContinuous {
       val callbacks: Callbacks,
       val dynamicInputs: mutable.Set[DynamicInput],
       val pending: Boolean,
-      var failAction: Option[Watch.Action],
+      var terminationAction: Option[Watch.Action],
   ) {
     def this(
         count: Int,
@@ -1162,7 +1162,8 @@ private[sbt] object Continuous extends DeprecatedContinuous {
         afterWatch,
         callbacks,
         dynamicInputs,
-        p
+        p,
+        terminationAction,
       )
     private def withCount(c: Int): ContinuousState =
       new ContinuousState(
@@ -1173,7 +1174,8 @@ private[sbt] object Continuous extends DeprecatedContinuous {
         afterWatch,
         callbacks,
         dynamicInputs,
-        pending
+        pending,
+        terminationAction,
       )
   }
 }
@@ -1341,12 +1343,13 @@ private[sbt] object ContinuousCommands {
         case Watch.Trigger     => Right(s"$runWatch ${channel.name}")
         case Watch.Reload =>
           val rewatch = s"$ContinuousExecutePrefix ${ws.count} ${cs.commands mkString "; "}"
+          cs.terminationAction = Some(Watch.Reload)
           stop.map(_ :: "reload" :: rewatch :: Nil mkString "; ")
         case Watch.Prompt => stop.map(_ :: s"$PromptChannel ${channel.name}" :: Nil mkString ";")
         case Watch.Run(commands) =>
           stop.map(_ +: commands.map(_.commandLine).filter(_.nonEmpty) mkString "; ")
         case a @ Watch.HandleError(_) =>
-          cs.failAction = Some(a)
+          cs.terminationAction = Some(a)
           stop.map(_ :: s"$failWatch ${channel.name}" :: Nil mkString "; ")
         case _ => stop
       }
@@ -1394,7 +1397,7 @@ private[sbt] object ContinuousCommands {
           }
           val commands = cs.commands.mkString("; ")
           val count = cs.count
-          val action = cs.failAction.getOrElse(Watch.CancelWatch)
+          val action = cs.terminationAction.getOrElse(Watch.CancelWatch)
           val st = cs.callbacks.onTermination(action, commands, count, newState)
           if (error) st.fail else st
         case _ => if (error) state.fail else state
