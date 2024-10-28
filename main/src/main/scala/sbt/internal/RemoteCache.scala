@@ -419,7 +419,7 @@ object RemoteCache {
     // preserve semanticdb dir
     // https://github.com/scalameta/scalameta/blob/a7927ee8e012cfff/semanticdb/scalac/library/src/main/scala/scala/meta/internal/semanticdb/scalac/SemanticdbPaths.scala#L9
     Option((output / "META-INF").listFiles).foreach(
-      _.iterator.filterNot(_.getName == "semanticdb").foreach(IO.delete)
+      _.iterator.filterNot(_.getName == "semanticdb")//.foreach(IO.delete)
     )
   }
 
