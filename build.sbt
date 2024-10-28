@@ -1176,7 +1176,13 @@ lazy val sbtClientProj = (project in file("client"))
     nativeImageReady := { () =>
       ()
     },
-    nativeImageInstalled := true,
+    if (isArmArchitecture)
+      Seq(
+        nativeImageVersion := "23.0",
+        nativeImageJvm := "graalvm-java23",
+      )
+    else Nil,
+    nativeImageInstalled := !isArmArchitecture,
     nativeImageOutput := {
       val outputDir = (target.value / "bin").toPath
       if (!Files.exists(outputDir)) {
